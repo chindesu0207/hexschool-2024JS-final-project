@@ -10,7 +10,7 @@ const Toast = Swal.mixin({
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
-  }
+  },
 });
 // 取得產品列表
 function getProductList() {
@@ -64,7 +64,7 @@ function addCartItem(id, qty) {
       renderCartList();
       Toast.fire({
         icon: "success",
-        title: "商品已加入購物車"
+        title: "商品已加入購物車",
       });
     });
 }
@@ -179,6 +179,9 @@ function createOrder() {
           orderInfoForm.reset();
           isPass = false;
           cartData = [];
+          category = "全部";
+          productSelect.value = "全部";
+          renderProducts();
           renderCartList();
         }
       })
@@ -195,7 +198,7 @@ function createOrder() {
 
 // 取得訂單
 function getOrderList() {
-  isLoading(true)
+  isLoading(true);
   axios
     .get(
       `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
@@ -234,7 +237,7 @@ function editOrderList(orderId, paid) {
       renderOrderList();
       Toast.fire({
         icon: "success",
-        title: `訂單狀態已修改為${!paid ? "已處理" : "未處理"}`
+        title: `訂單狀態已修改為${!paid ? "已處理" : "未處理"}`,
       });
     });
 }
@@ -257,7 +260,7 @@ function deleteAllOrder() {
     cancelButtonText: "否",
   }).then((result) => {
     if (result.isConfirmed) {
-      isLoading(true)
+      isLoading(true);
       axios
         .delete(
           `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,

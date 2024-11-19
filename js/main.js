@@ -1,4 +1,5 @@
 const products = document.querySelector(".productWrap");
+const productSelect = document.querySelector(".productSelect");
 let productCard = document.querySelectorAll(".productCard");
 let quantity = document.querySelectorAll(".quantity");
 let counterDown = document.querySelectorAll(".counterDown");
@@ -11,9 +12,10 @@ const totalPrice = document.querySelector(".totalPrice");
 const orderInfoForm = document.querySelector(".orderInfo-form");
 const errorMsg = document.querySelectorAll(".orderInfo-message");
 const createOrderBtn = document.querySelector(".orderInfo-btn");
-const randomAdd = document.querySelector('.randomAdd')
-const fillOrderInfoBtn = document.querySelector('.fillOrderInfo')
+const randomAdd = document.querySelector(".randomAdd");
+const fillOrderInfoBtn = document.querySelector(".fillOrderInfo");
 
+let category = "全部";
 let productData = [];
 let cartData = {};
 let isPass = false;
@@ -82,6 +84,11 @@ orderInfoForm.addEventListener("change", (e) => {
   if (e.target.id == "tradeWay") orderInfo.payment = e.target.value;
 });
 
+productSelect.addEventListener("change", (e) => {
+  category = e.target.value;
+  renderProducts();
+});
+
 discardAllBtn.addEventListener("click", (e) => {
   e.preventDefault();
   deleteAllCartList();
@@ -92,16 +99,20 @@ createOrderBtn.addEventListener("click", (e) => {
   createOrder();
 });
 
-randomAdd.addEventListener('click', ()=>randomCartList(Math.floor(Math.random() * 5) + 1))
+randomAdd.addEventListener("click", () =>
+  randomCartList(Math.floor(Math.random() * 5) + 1)
+);
 
-fillOrderInfoBtn.addEventListener('click',()=>fillOrderInfo())
+fillOrderInfoBtn.addEventListener("click", () => fillOrderInfo());
 
 function renderProducts() {
   let cards = ``;
 
-  productData.forEach(
-    (product) =>
-      (cards += `<li class="productCard">
+  productData
+    .filter((item) => (category == "全部" ? item : item.category == category))
+    .forEach(
+      (product) =>
+        (cards += `<li class="productCard">
           <h4 class="productType">新品</h4>
           <img
             src="${product.images}"
@@ -117,7 +128,7 @@ function renderProducts() {
           <del class="originPrice">NT$${product.origin_price}</del>
           <p class="nowPrice">NT$${product.price}</p>
         </li>`)
-  );
+    );
   products.innerHTML = cards;
 
   productCard = document.querySelectorAll(".productCard");
@@ -237,4 +248,4 @@ function init() {
   getCartList();
 }
 
-init()
+init();
