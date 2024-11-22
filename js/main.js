@@ -233,14 +233,12 @@ function updateQty(index, change) {
 }
 
 function checkOrderInfo() {
-  errorMsg[0].textContent =
-    validate({ name: orderInfo.name }, rule)?.name ?? "";
-  errorMsg[1].textContent = validate({ tel: orderInfo.tel }, rule)?.tel ?? "";
-  errorMsg[2].textContent =
-    validate({ email: orderInfo.email }, rule)?.email ?? "";
-  errorMsg[3].textContent =
-    validate({ address: orderInfo.address }, rule)?.address ?? "";
-  isPass = Array.from(errorMsg).every((item) => item.textContent == "");
+  let errors = validate(orderInfo, rule)
+  if(errors){
+    Object.keys(errors).forEach(keys=>document.querySelector(`.${keys}`).nextElementSibling.textContent = errors[keys])
+  }else{
+    isPass = true
+  }
 }
 
 function init() {
