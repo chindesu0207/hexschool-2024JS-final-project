@@ -123,7 +123,7 @@ function renderProducts() {
             <input type="text" class="quantity" value="1"/>
             <button class="counterUp">+</button>
           </div>
-          <a href="#" class="addCartBtn">加入購物車</a>
+          <a href="#" class="addCartBtn" data-id="${product.id}">加入購物車</a>
           <h3>${product.title}</h3>
           <del class="originPrice">NT$${product.origin_price}</del>
           <p class="nowPrice">NT$${product.price}</p>
@@ -141,7 +141,7 @@ function renderProducts() {
       if (e.target.matches(".counterDown")) updateQty(index, -1);
       if (e.target.matches(".counterUp")) updateQty(index, 1);
       if (e.target.matches(".addCartBtn")) {
-        addCartItem(productData[index].id, quantity[index].value);
+        addCartItem(e.target.dataset.id, quantity[index].value);
       }
     });
     item.addEventListener("change", (e) => {
