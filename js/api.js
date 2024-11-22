@@ -90,7 +90,7 @@ function editCartItem(cartId, qty) {
 
 // 清除購物車內全部產品
 function deleteAllCartList() {
-  if (cartData.carts.length == 0 || cartData.carts == undefined)
+  if (!Array.isArray(cartData?.carts) || cartData.carts.length == 0)
     return Swal.fire({
       icon: "error",
       title: "購物車內目前沒有商品!",
@@ -157,7 +157,7 @@ function deleteCartItem(cartId, title) {
 
 // 送出購買訂單
 function createOrder() {
-  if (cartData.carts.length == 0 || cartData.carts == undefined)
+  if (!Array.isArray(cartData?.carts) || cartData.carts.length == 0)
     return Swal.fire({
       icon: "error",
       title: "購物車內目前沒有商品!",
@@ -178,7 +178,7 @@ function createOrder() {
         if (response.data.status) {
           orderInfoForm.reset();
           isPass = false;
-          cartData = [];
+          cartData = {};
           category = "全部";
           productSelect.value = "全部";
           renderProducts();
@@ -244,7 +244,7 @@ function editOrderList(orderId, paid) {
 
 // 刪除全部訂單
 function deleteAllOrder() {
-  if (Object.keys(chartData).length == 0)
+  if (orderData.length == 0)
     return Swal.fire({
       icon: "error",
       title: "目前沒有訂單資料!",
