@@ -142,6 +142,7 @@ function renderProducts() {
       if (e.target.matches(".counterUp")) updateQty(index, 1);
       if (e.target.matches(".addCartBtn")) {
         addCartItem(e.target.dataset.id, quantity[index].value);
+        quantity[index].value = 1
       }
     });
     item.addEventListener("change", (e) => {
@@ -153,7 +154,7 @@ function renderProducts() {
 function renderCartList() {
   let list = ``;
 
-  if (cartData.carts != undefined && cartData.carts.length > 0) {
+  if (Array.isArray(cartData?.carts) && cartData.carts.length > 0) {
     cartData.carts.forEach((item) => {
       list += `<tr class="cartCard">
               <td>

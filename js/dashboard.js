@@ -13,9 +13,10 @@ discardAllBtn.addEventListener("click", () => deleteAllOrder());
 function renderOrderList() {
   let list = ``;
   if (orderData.length != 0) {
-    orderData.forEach(
-      (order) =>
-        (list += `<tr>
+    orderData.forEach((order) => {
+      let productList = ``
+      order.products.forEach(item=> productList+= `<p>${item.title} * ${item.quantity}</p>`)
+      list += `<tr>
               <td>${order.id}</td>
               <td>
                 <p>${order.user.name}</p>
@@ -23,18 +24,16 @@ function renderOrderList() {
               </td>
               <td>${order.user.address}</td>
               <td>${order.user.email}</td>
-              <td>
-                <p>${order.products[0].title}</p>
-              </td>
-              <td>${dayjs(order.createdAt).format("YYYY/MM/DD")}</td>
+              <td>${productList}</td>
+              <td>${dayjs(order.createdAt * 1000).format("YYYY/MM/DD")}</td>
               <td class="orderStatus">
                 <a href="#">${order.paid ? "已處理" : "未處理"}</a>
               </td>
               <td>
                 <input type="button" class="delSingleOrder-Btn" value="刪除" />
               </td>
-            </tr>`)
-    );
+            </tr>`;
+    });
   } else
     list = `<tr><td colspan="8" style="text-align:center">目前沒有訂單資料</td></tr>`;
   orderList.innerHTML = list;
@@ -76,18 +75,18 @@ function calculate() {
   orderData.forEach((order) => {
     order.products.forEach((item) =>
       countData[item.title] == undefined
-        ? (countData[item.title] = item.quantity)
-        : (countData[item.title] += item.quantity)
+        ? (countData[item.title] = item.price * item.quantity)
+        : (countData[item.title] += item.price * item.quantity)
     );
   });
   let sortData = Object.entries(countData).sort(
     ([, valueA], [, valueB]) => valueB - valueA
   );
   let others = sortData.splice(3);
-  othersCounts = others.reduce((total, item) => total + item[1], 0);
+  othersTotal = others.reduce((total, item) => total + item[1], 0);
 
   chartData = sortData;
-  othersCounts > 0 ? chartData.push(["其他", othersCounts]) : "";
+  othersTotal > 0 ? chartData.push(["其他", othersTotal]) : "";
 
   generateChart(chartData);
 }
