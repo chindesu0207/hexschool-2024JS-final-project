@@ -1,6 +1,3 @@
-const api_path = "tatsu";
-const token = "qAqFAv6yjqW3YExAtDVDYByuzF33";
-
 const Toast = Swal.mixin({
   toast: true,
   position: "top-end",
@@ -13,89 +10,79 @@ const Toast = Swal.mixin({
   },
 });
 // 取得產品列表
-function getProductList() {
-  axios
-    .get(
-      `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/products`
-    )
-    .then(function (response) {
-      productData = response.data.products;
-      renderProducts();
-    })
-    .catch(function (error) {
-      console.log(error.response.data);
-    });
+async function getProductList() {
+  try {
+    let res = await axios.get(`${customerUrl}/products`);
+    productData = res.data.products;
+    renderProducts();
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 取得購物車列表
-function getCartList() {
+async function getCartList() {
   isLoading(true);
-  axios
-    .get(
-      `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`
-    )
-    .then(function (response) {
-      cartData = response.data;
-      renderCartList();
-    });
+  try {
+    let res = await axios.get(`${customerUrl}/carts`);
+    cartData = res.data;
+    renderCartList();
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 加入購物車
-function addCartItem(id, qty) {
+async function addCartItem(id, qty) {
   isLoading(true);
   //判斷商品是否已存在，若存在則加上原本已在購物車的數量
-  let index =
-    cartData.carts == undefined
-      ? -1
-      : cartData.carts.findIndex((item) => item.product.id == id);
-  if (index >= 0) qty = +qty + cartData.carts[index].quantity;
-  axios
-    .post(
-      `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`,
-      {
-        data: {
-          productId: id,
-          quantity: +qty,
-        },
-      }
-    )
-    .then(function (response) {
-      cartData = response.data;
-      renderCartList();
-      Toast.fire({
-        icon: "success",
-        title: "商品已加入購物車",
-      });
+  if (Array.isArray(cartData?.carts) && cartData.carts.length > 0){
+    let targetItem = cartData.carts.find((item) => item.product.id == id);
+    qty = targetItem == undefined ? +qty : +qty + targetItem.quantity;
+  }
+  try {
+    let res = await axios.post(`${customerUrl}/carts`, {
+      data: {
+        productId: id,
+        quantity: +qty,
+      },
     });
+    cartData = res.data;
+    renderCartList();
+    Toast.fire({
+      icon: "success",
+      title: "商品已加入購物車",
+    });
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 編輯購物車品項數量
-function editCartItem(cartId, qty) {
+async function editCartItem(cartId, qty) {
   isLoading(true);
-  axios
-    .patch(
-      `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`,
-      {
-        data: {
-          id: cartId,
-          quantity: +qty,
-        },
-      }
-    )
-    .then(function (response) {
-      cartData = response.data;
-      renderCartList();
+  try {
+    let res = await axios.patch(`${customerUrl}/carts`, {
+      data: {
+        id: cartId,
+        quantity: +qty,
+      },
     });
+    cartData = res.data;
+    renderCartList();
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 清除購物車內全部產品
-function deleteAllCartList() {
+async function deleteAllCartList() {
   if (!Array.isArray(cartData?.carts) || cartData.carts.length == 0)
     return Swal.fire({
       icon: "error",
       title: "購物車內目前沒有商品!",
     });
-  Swal.fire({
+  let result = await Swal.fire({
     title: "您確定要移除所有品項嗎?",
     icon: "warning",
     showCancelButton: true,
@@ -103,30 +90,26 @@ function deleteAllCartList() {
     cancelButtonColor: "#d33",
     confirmButtonText: "是",
     cancelButtonText: "否",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      isLoading(true);
-      axios
-        .delete(
-          `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`
-        )
-        .then(function (response) {
-          if (response.data.status) {
-            cartData = response.data;
-            renderCartList();
-            Swal.fire({
-              title: "購物車產品已經全部清空!",
-              icon: "success",
-            });
-          }
-        });
-    }
   });
+  if (result.isConfirmed) {
+    isLoading(true);
+    try {
+      let res = await axios.delete(`${customerUrl}/carts`);
+      cartData = res.data;
+      renderCartList();
+      Swal.fire({
+        title: "購物車產品已經全部清空!",
+        icon: "success",
+      });
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  }
 }
 
 // 刪除購物車內特定產品
-function deleteCartItem(cartId, title) {
-  Swal.fire({
+async function deleteCartItem(cartId, title) {
+  let result = await Swal.fire({
     title: `${title}`,
     text: "您確定要刪除這個商品嗎?",
     icon: "warning",
@@ -135,28 +118,28 @@ function deleteCartItem(cartId, title) {
     cancelButtonColor: "#d33",
     confirmButtonText: "是",
     cancelButtonText: "否",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      isLoading(true);
-      axios
-        .delete(
-          `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cartId}`
-        )
-        .then(function (response) {
-          cartData = response.data;
-          renderCartList();
-          Swal.fire({
-            title: `${title}`,
-            text: "已經被刪除!",
-            icon: "success",
-          });
-        });
-    }
   });
+  if (result.isConfirmed) {
+    isLoading(true);
+    try {
+      let res = await axios.delete(
+        `${customerUrl}/carts/${cartId}`
+      );
+      cartData = res.data;
+      renderCartList();
+      Swal.fire({
+        title: `${title}`,
+        text: "已經被刪除!",
+        icon: "success",
+      });
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  }
 }
 
 // 送出購買訂單
-function createOrder() {
+async function createOrder() {
   if (!Array.isArray(cartData?.carts) || cartData.carts.length == 0)
     return Swal.fire({
       icon: "error",
@@ -165,29 +148,22 @@ function createOrder() {
   checkOrderInfo();
   if (isPass) {
     isLoading(true);
-    axios
-      .post(
-        `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`,
-        {
-          data: {
-            user: orderInfo,
-          },
-        }
-      )
-      .then(function (response) {
-        if (response.data.status) {
-          orderInfoForm.reset();
-          isPass = false;
-          cartData = {};
-          category = "全部";
-          productSelect.value = "全部";
-          renderProducts();
-          renderCartList();
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
+    try {
+      let res = await axios.post(`${customerUrl}/orders`, {
+        data: {
+          user: orderInfo,
+        },
       });
+      orderInfoForm.reset();
+      isPass = false;
+      cartData = {};
+      category = "全部";
+      productSelect.value = "全部";
+      renderProducts();
+      renderCartList();
+    } catch (error) {
+      console.log(error.response.data);
+    }
   } else {
     Swal.fire({
       icon: "error",
@@ -197,59 +173,50 @@ function createOrder() {
 }
 
 // 取得訂單
-function getOrderList() {
+async function getOrderList() {
   isLoading(true);
-  axios
-    .get(
-      `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    )
-    .then(function (response) {
-      orderData = response.data.orders;
-      renderOrderList();
-    });
+  try {
+    let res = await axios.get(`${adminUrl}/orders`, headers);
+    orderData = res.data.orders;
+    renderOrderList();
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 修改訂單狀態
-function editOrderList(orderId, paid) {
+async function editOrderList(orderId, paid) {
   isLoading(true);
-  axios
-    .put(
-      `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
+  try {
+    let res = await axios.put(
+      `${adminUrl}/orders`,
       {
         data: {
           id: orderId,
           paid: !paid,
         },
       },
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    )
-    .then(function (response) {
-      orderData = response.data.orders;
-      renderOrderList();
-      Toast.fire({
-        icon: "success",
-        title: `訂單狀態已修改為${!paid ? "已處理" : "未處理"}`,
-      });
+      headers
+    );
+    orderData = res.data.orders;
+    renderOrderList();
+    Toast.fire({
+      icon: "success",
+      title: `訂單狀態已修改為${!paid ? "已處理" : "未處理"}`,
     });
+  } catch (error) {
+    console.log(error.response.data);
+  }
 }
 
 // 刪除全部訂單
-function deleteAllOrder() {
+async function deleteAllOrder() {
   if (orderData.length == 0)
     return Swal.fire({
       icon: "error",
       title: "目前沒有訂單資料!",
     });
-  Swal.fire({
+  let result = await Swal.fire({
     title: "是否要刪除全部訂單?",
     text: "一但刪除後，訂單資料將無法復原!",
     icon: "warning",
@@ -258,36 +225,32 @@ function deleteAllOrder() {
     cancelButtonColor: "#d33",
     confirmButtonText: "是",
     cancelButtonText: "否",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      isLoading(true);
-      axios
-        .delete(
-          `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        )
-        .then(function (response) {
-          Swal.fire({
-            title: "刪除成功!",
-            text: "已清除所有訂單資料",
-            icon: "success",
-            timer: 1500,
-          });
-          orderData = response.data.orders;
-          countData = {};
-          renderOrderList();
-        });
-    }
   });
+  if (result.isConfirmed) {
+    isLoading(true);
+    try {
+      let res = await axios.delete(
+        `${adminUrl}/orders`,
+        headers
+      );
+      Swal.fire({
+        title: "刪除成功!",
+        text: "已清除所有訂單資料",
+        icon: "success",
+        timer: 1500,
+      });
+      orderData = res.data.orders;
+      countData = {};
+      renderOrderList();
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  }
 }
 
 // 刪除特定訂單
-function deleteOrderItem(orderId) {
-  Swal.fire({
+async function deleteOrderItem(orderId) {
+  let result = await Swal.fire({
     title: `${orderId}`,
     text: "是否要刪除此訂單",
     icon: "warning",
@@ -296,27 +259,23 @@ function deleteOrderItem(orderId) {
     cancelButtonColor: "#d33",
     confirmButtonText: "是",
     cancelButtonText: "否",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      isLoading(true);
-      axios
-        .delete(
-          `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        )
-        .then(function (response) {
-          orderData = response.data.orders;
-          renderOrderList();
-        });
+  });
+  if (result.isConfirmed) {
+    isLoading(true);
+    try {
+      let res = await axios.delete(
+        `${adminUrl}/orders/${orderId}`,
+        headers
+      );
+      orderData = res.data.orders;
+      renderOrderList();
       Swal.fire({
         title: "訂單已刪除!",
         icon: "success",
         timer: 1500,
       });
+    } catch (error) {
+      console.log(error.response.data);
     }
-  });
+  }
 }

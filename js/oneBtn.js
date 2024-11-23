@@ -71,9 +71,9 @@ const fakeData = [
   },
 ];
 
-function randomCartList(times) {
+async function randomCartList(times) {
   for (let i = 0; i < times; i++) {
-    addCartItem(
+    await addCartItem(
       productData[Math.floor(Math.random() * 8)].id,
       Math.floor(Math.random() * 5) + 1
     );
