@@ -159,6 +159,13 @@ async function createOrder() {
       cartData = {};
       category = "全部";
       productSelect.value = "全部";
+      orderInfo = {
+        name: "",
+        tel: "",
+        email: "",
+        address: "",
+        payment: "ATM",
+      }
       renderProducts();
       renderCartList();
     } catch (error) {

@@ -88,6 +88,9 @@ function fillOrderInfo() {
   input[2].value = orderInfo.email;
   input[3].value = orderInfo.address;
   input[4].value = orderInfo.payment;
+  input.forEach((item, index) =>
+    index < 4 ? (item.nextElementSibling.textContent = "") : ""
+  );
 }
 
 function randomOrderInfo() {
